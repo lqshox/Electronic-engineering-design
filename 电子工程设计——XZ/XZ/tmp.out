@@ -1,0 +1,9 @@
+
+C51 COMPILER V9.60.0.0 - SN: Eval Version
+COPYRIGHT Copyright (C) 2012 - 2019 ARM Ltd and ARM Germany GmbH. All rights reserved.
+*** WARNING C318 IN LINE 10 OF si_toolchain.h: can't open file 'stdint.h'
+*** WARNING C318 IN LINE 11 OF si_toolchain.h: can't open file 'stdbool.h'
+*** ERROR C141 IN LINE 534 OF si_toolchain.h: syntax error near 'uint16_t', expected 'bit'
+*** ERROR C129 IN LINE 534 OF si_toolchain.h: missing ';' before 'u16'
+
+C51 COMPILATION COMPLETE.  2 WARNING(S),  2 ERROR(S)

@@ -1,0 +1,568 @@
+C51 COMPILER V9.60.0.0   XZ                                                                04/04/2024 14:00:04 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE XZ
+OBJECT MODULE PLACED IN XZ.OBJ
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\c51.exe XZ.c DB OE BR INCDIR(C:\SiLabs\MCU\Inc)
+
+line level    source
+
+   1          #define uchar unsigned char
+   2          #define uint  unsigned int
+   3          #define ulong  unsigned long
+   4          
+   5          #include "si_toolchain.h"
+*** WARNING C318 IN LINE 10 OF si_toolchain.h: can't open file 'stdint.h'
+*** WARNING C318 IN LINE 11 OF si_toolchain.h: can't open file 'stdbool.h'
+*** ERROR C141 IN LINE 534 OF si_toolchain.h: syntax error near 'uint16_t', expected 'bit'
+*** ERROR C129 IN LINE 534 OF si_toolchain.h: missing ';' before 'u16'
+   6          #include "C8051F020_defs.h"
+   7          #include "absacc.h"
+   8          #include "Init_DeviceA.c"
+   9          
+  10          sbit KEY1       =       P1^4;                                                                                                                                                                           //¶¨ÒåP1.0Îª´òÓ¡»úÃ¦¼ì²âÐÅºÅÏß
+  11          sbit KEY2       =       P1^5;
+  12          sbit KEY3       =       P1^6;
+  13          sbit KEY4       =       P1^7;
+  14          int zs_point=0,xs_point=0,caozuoshu1=0,caozuoshu2=0;
+  15          uchar keystate=-1,buf1;
+  16                                                                                                                                                                                                                                  //º¯ÊýÉùÃ÷
+  17          void init_UART(void);                                                                                                                                                                           //ÉèÖÃ´®¿Ú¹¤×÷·½Ê½¡¢²¨ÌØÂÊ¡£
+  18          void send_1byte(uchar dat);                                                                                                                                                                     //·¢ËÍ1¸ö×Ö½Ú
+  19          uchar receive_1byte();                                                                                                                                                                          //½ÓÊÕ1¸ö×Ö½Ú
+  20          uchar read_key();                                                                                                                                                                                       //°´¼ü¶ÁÈ¡º¯Êý
+  21          int Count(int shiwei,int gewei,int mode);                                                                                                                                       //ÕûÊý¼ÆËãº¯Êý£¬Ä£Ê½0Îª0_63£¬Ä£Ê½1Îª0_38£¬Ä£Ê½2Î
+             -ª0_17
+  22          void SendFF(int num);
+  23          void Send(int num,int mode);
+  24          void Receive(int num);
+  25          void delay(void);
+  26          void delay1(void); 
+  27          uchar table[]={0xC0,0xF9,0xA4,0xB0,0x99,0x92,0x82,0xF8,0x80,0x90,0x88,0x83,0xC6,0xA1,0x86,0x8E,0xFF};
+  28          
+  29          
+  30          void main()
+  31          {
+  32                  uchar a=-1,b=-1,c=-1;
+  33                  int caozuoshu1=0,caozuoshu2=0,shiwei=0,gewei=0;
+  34          
+  35                  Init_DeviceA();
+  36                  init_UART();                                                                                                                                                                                    //ÉèÖÃ´®¿Ú¹¤×÷·½Ê½¡¢²¨ÌØÂÊ¡£
+  37          
+  38                  while(1)
+  39                  {
+  40          tuichu:
+  41                          //Ã¿´Î²Ù×÷»Ö¸´³õÊ¼×´Ì¬
+  42                          a=-1,b=-1,c=-1,caozuoshu1=0,caozuoshu2=0,shiwei=0,gewei=0,keystate=-1,zs_point=0,xs_point=0;            //±äÁ
+             -¿³õÊ¼»¯
+  43          
+  44                          P2=table[14];
+  45                          P3=table[0];
+  46                          a=read_key();                                           //read_keyº¯ÊýµÄÉè¶¨  ·µ»Ø²ÎÊý1 2 3 4    ||2024.4.4
+  47                          if(a!=-1)
+  48                          {
+  49                                  switch(a)
+C51 COMPILER V9.60.0.0   XZ                                                                04/04/2024 14:00:04 PAGE 2   
+
+  50                                  {
+  51                                          case 1:                                         //°´¼ü1½ÓÍ¨                                                                                                                             //Ñ¡Ôñ²Ù×÷ÃüÁî0-3
+  52                                                  P2=table[3];
+  53                                                  P3=table[0];
+  54                                                  while(1)
+  55                                                  {
+  56                                                          b=read_key();
+  57                                                          switch(b)
+  58                                                          {
+  59                                                                  case 1:                                                                                                                                                                 //Ñ¡Ôñ²Ù×÷ÃüÁî0
+  60                                                                          P3=0x88;
+  61                                                                          P2=table[0];//ÏÔÊ¾A0
+  62                                                                          while(1)
+  63                                                                          {
+  64                                                                                  c=read_key();
+  65                                                                                  if(zs_point==1){P3=0x7f;}                                                               //Ð¡ÊýµãÎ»ÁÁÆð£¬±êÊ¶ÕýÔÚÖ´ÐÐµÄ²½Öè
+  66                                                                                  if(xs_point==1){P2=0x7f;}
+  67                                                                                  switch(c)
+  68                                                                                  {
+  69                                                                                          case 1:                                                                                                                                         //ÊäÈëÕûÊý£¨·µ»ØÊ®½øÖÆ£©
+  70                                                                                                  caozuoshu1=Count(shiwei,gewei,0);
+  71                                                                                                  zs_point=1;
+  72                                                                                                  break;
+  73                                                                                          case 2:                                                                                                                                         //ÊäÈëÐ¡Êý
+  74                                                                                                  caozuoshu2=Count(shiwei,gewei,0);
+  75                                                                                                  xs_point=1;
+  76                                                                                                  break;
+  77                                                                                          case 3:                                                                                                                                         //ÍË³ö
+  78                                                                                                  goto tuichu;
+  79                                                                                                  break;
+  80                                                                                          case 4:                                                                                                                                         //È·ÈÏ²¢·¢ËÍ
+  81                                                                                                  send_1byte('I');
+  82                                                                                                  send_1byte('R');
+  83                                                                                                  send_1byte(0xa0);
+  84                                                                                                  send_1byte(caozuoshu1);
+  85                                                                                                  send_1byte(caozuoshu2);
+  86                                                                                                  goto tuichu;
+  87                                                                                                  break;
+  88                                                                                  }
+  89                                                                          }
+  90                                                                          break;
+  91                                                                  case 2:                                                                                                                                                                 //Ñ¡Ôñ²Ù×÷ÃüÁî1
+  92                                                                          SendFF(1);
+  93                                                                          goto tuichu;
+  94                                                                          break;
+  95                                                                  case 3:                                                                                                                                                                 //Ñ¡Ôñ²Ù×÷ÃüÁî2
+  96                                                                          SendFF(2);
+  97                                                                          goto tuichu;
+  98                                                                          break;
+  99                                                                  case 4:                                                                                                                                                                 //Ñ¡Ôñ²Ù×÷ÃüÁî3
+ 100                                                                          SendFF(3);
+ 101                                                                          goto tuichu;
+ 102                                                                          break;
+ 103                                                          }
+ 104                                                  }
+ 105                                                  break;
+ 106                                          case 2:                                                                                                                                                 //Ñ¡Ôñ²Ù×÷ÃüÁî4-7       20244.4.5
+ 107                                                  P3=table[4];
+ 108                                                  P2=table[7];
+ 109                                                  while(1)
+ 110                                                  {
+ 111                                                          b=read_key();
+C51 COMPILER V9.60.0.0   XZ                                                                04/04/2024 14:00:04 PAGE 3   
+
+ 112                                                          switch(b)
+ 113                                                          {
+ 114                                                                  case 1:                                                                                                                                                                 //Ñ¡Ôñ²Ù×÷ÃüÁî4
+ 115                                                                          P3=table[10];
+ 116                                                                          P2=table[4];
+ 117                                                                          while(1)
+ 118                                                                          {
+ 119                                                                                  c=read_key();
+ 120                                                                                  if(zs_point==1){P2=0x7f;}
+ 121                                                                                  if(xs_point==1){P3=0x7f;}
+ 122                                                                                  switch(c)
+ 123                                                                                  {
+ 124                                                                                          case 1:                                                                                                                                                 //ÊäÈëÕûÊý
+ 125                                                                                                  caozuoshu1=Count(shiwei,gewei,1);
+ 126                                                                                                  zs_point=1;
+ 127                                                                                                  break;
+ 128                                                                                          case 2:                                                                                                                                                 //ÊäÈëÐ¡Êý
+ 129                                                                                                  caozuoshu2=Count(shiwei,gewei,1);
+ 130                                                                                                  xs_point=1;
+ 131                                                                                                  break;
+ 132                                                                                          case 3:                                                                                                                                                 //ÍË³ö
+ 133                                                                                                  goto tuichu;
+ 134                                                                                                  break;
+ 135                                                                                          case 4:                                                                                                                                                 //È·ÈÏ²¢·¢ËÍ
+ 136                                                                                                  send_1byte('I');
+ 137                                                                                                  send_1byte('R');
+ 138                                                                                                  send_1byte(0xa4);
+ 139                                                                                                  send_1byte(caozuoshu1);
+ 140                                                                                                  send_1byte(caozuoshu2);
+ 141                                                                                                  goto tuichu;
+ 142                                                                                                  break;
+ 143                                                                                  }
+ 144                                                                          }
+ 145                                                                          break;
+ 146                                                                  case 2:                                                                                                                                                                 //Ñ¡Ôñ²Ù×÷ÃüÁî5
+ 147                                                                          P3=table[10];
+ 148                                                                          P2=table[5];
+ 149                                                                          while(1)
+ 150                                                                          {
+ 151                                                                                  c=read_key();
+ 152                                                                                  if(zs_point==1){P2=0x7f;}
+ 153                                                                                  if(xs_point==1){P3=0x7f;}
+ 154                                                                                  switch(c)
+ 155                                                                                  {
+ 156                                                                                          case 1:                                                                                                                                                 //ÊäÈëÕûÊý
+ 157                                                                                                  caozuoshu1=Count(shiwei,gewei,1);
+ 158                                                                                                  zs_point=1;
+ 159                                                                                                  break;
+ 160                                                                                          case 2:                                                                                                                                                 //ÊäÈëÐ¡Êý
+ 161                                                                                                  caozuoshu2=Count(shiwei,gewei,1);
+ 162                                                                                                  xs_point=1;
+ 163                                                                                                  break;
+ 164                                                                                          case 3:                                                                                                                                                 //ÍË³ö
+ 165                                                                                                  goto tuichu;
+ 166                                                                                                  break;
+ 167                                                                                          case 4:                                                                                                                                                 //È·ÈÏ²¢·¢ËÍ
+ 168                                                                                                  send_1byte('I');
+ 169                                                                                                  send_1byte('R');
+ 170                                                                                                  send_1byte(0xa5);
+ 171                                                                                                  send_1byte(caozuoshu1);
+ 172                                                                                                  send_1byte(caozuoshu2);
+ 173                                                                                                  goto tuichu;
+C51 COMPILER V9.60.0.0   XZ                                                                04/04/2024 14:00:04 PAGE 4   
+
+ 174                                                                                                  break;
+ 175                                                                                  }
+ 176                                                                          }
+ 177                                                                          break;
+ 178                                                                  case 3:                                                                                                                                                                 //Ñ¡Ôñ²Ù×÷ÃüÁî6
+ 179                                                                          P3=table[10];
+ 180                                                                          P2=table[6];
+ 181                                                                          while(1)
+ 182                                                                          {
+ 183                                                                                  c=read_key();
+ 184                                                                                  if(zs_point==1){P2=0x7f;}
+ 185                                                                                  if(xs_point==1){P3=0x7f;}
+ 186                                                                                  switch(c)
+ 187                                                                                  {
+ 188                                                                                          case 1:                                                                                                                                                 //ÊäÈëÕûÊý
+ 189                                                                                                  caozuoshu1=Count(shiwei,gewei,2);
+ 190                                                                                                  zs_point=1;
+ 191                                                                                                  break;
+ 192                                                                                          case 2:                                                                                                                                                 //ÊäÈëÐ¡Êý
+ 193                                                                                                  caozuoshu2=Count(shiwei,gewei,2);
+ 194                                                                                                  xs_point=1;
+ 195                                                                                                  break;
+ 196                                                                                          case 3:                                                                                                                                                 //ÍË³ö
+ 197                                                                                                  goto tuichu;
+ 198                                                                                                  break;
+ 199                                                                                          case 4:                                                                                                                                                 //È·ÈÏ²¢·¢ËÍ
+ 200                                                                                                  send_1byte('I');
+ 201                                                                                                  send_1byte('R');
+ 202                                                                                                  send_1byte(0xa6);
+ 203                                                                                                  send_1byte(caozuoshu1);
+ 204                                                                                                  send_1byte(caozuoshu2);
+ 205                                                                                                  goto tuichu;
+ 206                                                                                                  break;
+ 207                                                                                  }
+ 208                                                                          }
+ 209                                                                          break;
+ 210                                                                  case 4:                                                                                                                                                                 //Ñ¡Ôñ²Ù×÷ÃüÁî7
+ 211                                                                          P3=table[10];
+ 212                                                                          P2=table[7];
+ 213                                                                          while(1)
+ 214                                                                          {
+ 215                                                                                  c=read_key();
+ 216                                                                                  if(zs_point==1){P2=0x7f;}
+ 217                                                                                  if(xs_point==1){P3=0x7f;}
+ 218                                                                                  switch(c)
+ 219                                                                                  {
+ 220                                                                                          case 1:                                                                                                                                                 //ÊäÈëÕûÊý
+ 221                                                                                                  caozuoshu1=Count(shiwei,gewei,2);
+ 222                                                                                                  zs_point=1;
+ 223                                                                                                  break;
+ 224                                                                                          case 2:                                                                                                                                                 //ÊäÈëÐ¡Êý
+ 225                                                                                                  caozuoshu2=Count(shiwei,gewei,2);
+ 226                                                                                                  xs_point=1;
+ 227                                                                                                  break;
+ 228                                                                                          case 3:                                                                                                                                                 //ÍË³ö
+ 229                                                                                                  goto tuichu;
+ 230                                                                                                  break;
+ 231                                                                                          case 4:                                                                                                                                                 //È·ÈÏ²¢·¢ËÍ
+ 232                                                                                                  send_1byte('I');
+ 233                                                                                                  send_1byte('R');
+ 234                                                                                                  send_1byte(0xa7);
+ 235                                                                                                  send_1byte(caozuoshu1);
+C51 COMPILER V9.60.0.0   XZ                                                                04/04/2024 14:00:04 PAGE 5   
+
+ 236                                                                                                  send_1byte(caozuoshu2);
+ 237                                                                                                  goto tuichu;
+ 238                                                                                                  break;
+ 239                                                                                  }
+ 240                                                                          }
+ 241                                                                          break;
+ 242                                                          }
+ 243                                                  }
+ 244                                                  break;
+ 245                                          case 3:                                                                                                                                                                         //Ñ¡Ôñ²Ù×÷ÃüÁî8-B  ÊÕ×´Ì¬
+ 246                                                  P3=table[8];
+ 247                                                  P2=table[11];
+ 248                                                  while(1)
+ 249                                                  {
+ 250                                                          b=read_key();
+ 251                                                          switch(b)
+ 252                                                          {
+ 253                                                                  case 1:                                                                                                                                                                 //Ñ¡Ôñ²Ù×÷ÃüÁî8
+ 254                                                                          SendFF(8);
+ 255                                                                          Receive(8);
+ 256                                                                          goto tuichu;
+ 257                                                                          break;
+ 258                                                                  case 2:                                                                                                                                                                 //Ñ¡Ôñ²Ù×÷ÃüÁî9
+ 259                                                                          SendFF(9);
+ 260                                                                          Receive(9);
+ 261                                                                          goto tuichu;
+ 262                                                                          break;
+ 263                                                                  case 3:                                                                                                                                                                 //Ñ¡Ôñ²Ù×÷ÃüÁîA
+ 264                                                                          SendFF(10);
+ 265                                                                          Receive(10);
+ 266                                                                          goto tuichu;
+ 267                                                                          break;
+ 268                                                                  case 4:                                                                                                                                                                 //Ñ¡Ôñ²Ù×÷ÃüÁîB
+ 269                                                                          SendFF(11);
+ 270                                                                          Receive(11);
+ 271                                                                          goto tuichu;
+ 272                                                                          break;
+ 273                                                          }
+ 274                                                  }
+ 275                                                  break;
+ 276                                          case 4:                                                                                                                                                                         //Ñ¡Ôñ²Ù×÷ÃüÁîC-E
+ 277                                                  P3=table[12];
+ 278                                                  P2=table[14];
+ 279                                                  while(1)
+ 280                                                  {
+ 281                                                          b=read_key();
+ 282                                                          switch(b)
+ 283                                                          {
+ 284                                                                  case 1:                                                                                                                                                                 //Ñ¡Ôñ²Ù×÷ÃüÁîC
+ 285                                                                          SendFF(12);
+ 286                                                                          Receive(12);
+ 287                                                                          goto tuichu;
+ 288                                                                          break;
+ 289                                                                  case 2:                                                                                                                                                                 //Ñ¡Ôñ²Ù×÷ÃüÁîD
+ 290                                                                          SendFF(13);
+ 291                                                                          Receive(13);
+ 292                                                                          goto tuichu;
+ 293                                                                          break;
+ 294                                                                  case 3:                                                                                                                                                                 //Ñ¡Ôñ²Ù×÷ÃüÁîE
+ 295                                                                          SendFF(14);
+ 296                                                                          Receive(14);
+ 297                                                                          goto tuichu;
+C51 COMPILER V9.60.0.0   XZ                                                                04/04/2024 14:00:04 PAGE 6   
+
+ 298                                                                          break;
+ 299                                                          }
+ 300                                                  }
+ 301                                                  break;
+ 302                                  }
+ 303                          }
+ 304                  }
+ 305          }
+ 306          
+ 307          
+ 308          uchar read_key()                                                                                                                //°´¼ü¶ÁÈ¡º¯Êý£¬·µ»ØÖµÎª°´ÏÂ°´¼ü¼üÂë£¨1¡¢2¡¢3¡¢4£©,ÎÞ°´¼üÊäÈëÔò·µ»Ø-1
+ 309          {
+ 310                  if(KEY1==0)
+ 311                  {
+ 312                          delay();                                                                                                        //Ò»ÃëÑÓÊ±
+ 313                          while(KEY1==0);
+ 314                          delay();
+ 315                          KEY1 = 1;
+ 316                          return 1;
+ 317                  }
+ 318                  if(KEY2==0)
+ 319                  {
+ 320                          delay();
+ 321                          while(KEY2==0);
+ 322                          delay();
+ 323                          KEY2 = 1;
+ 324                          return 2;
+ 325                  }
+ 326                  if(KEY3==0)
+ 327                  {
+ 328                          delay();
+ 329                          while(KEY3==0);
+ 330                          delay();
+ 331                          KEY3 = 1;
+ 332                          return 3;
+ 333                  }
+ 334                  if(KEY4==0)
+ 335                  {
+ 336                          delay();
+ 337                          while(KEY4==0);
+ 338                          delay();
+ 339                          KEY4 = 1;
+ 340                          return 4;
+ 341                  }
+ 342                  return -1;
+ 343          }       
+ 344          
+ 345          
+ 346          void init_UART(void)                                                                                                                                                                            //ÉèÖÃ´®¿Ú¹¤×÷·½Ê½¡¢²¨ÌØÂÊ¡£
+ 347          {
+ 348                  ES0=0;                                                                                                                                                                                                  //½ûÖ¹UART0ÖÐ¶Ï
+ 349                  EIE2=0x00;                                                                                                                                                                                              //½ûÖ¹UART1ÖÐ¶Ï
+ 350                  CKCON   = 0x00;                                                                                                                                                                                 //Ñ¡ÔñÏµÍ³Ê±ÖÓÎªÊ±ÖÓÔ´
+ 351                  T2CON   = 0x00;                 //C/T2Ê¹ÄÜ
+ 352                  SCON0   = 0x50;                 //UART0·½Ê½1£¨8Î»¿É±ä²¨ÌØÂÊ£©£¬½ÓÊÕÓÐÐ§
+ 353                  TMOD    = 0x21;                 //C/T0·½Ê½1,16Î»¼ÆÊý
+ 354                  TL1     = 0xe8;                 //C/T1²¨ÌØÂÊ9600¼ÆÊýÖµ
+ 355                  TH1     = 0xe8;                 //C/T1²¨ÌØÂÊ9600¼ÆÊýÖµ
+ 356                  TR1=1;                                  
+ 357          }
+ 358          
+ 359          
+C51 COMPILER V9.60.0.0   XZ                                                                04/04/2024 14:00:04 PAGE 7   
+
+ 360          void send_1byte(uchar dat)//·¢ËÍ1¸ö×Ö½Ú
+ 361          {
+ 362                  REN0=0;                 //UART0½ûÖ¹½ÓÊÕ£¬ºìÍâÏßÒ£¿ØµÄÊý¾Ý·¢ËÍ±ØÐëÈç´Ë
+ 363                  SBUF0=dat;
+ 364                  while(TI0==0);          //µÈ´ýUART0·¢ËÍ½áÊø£¨UART0·¢ËÍÖÐ¶Ï±êÖ¾TI0=1£©
+ 365                  TI0=0;  
+ 366                  REN0=1;                 //UART0ÔÊÐí½ÓÊÕ£¨REN0=1£©
+ 367          }
+ 368          
+ 369          
+ 370          uchar receive_1byte()//½ÓÊÕ1¸ö×Ö½Ú
+ 371          {
+ 372                  ulong  i_cont;
+ 373                  uchar dat;
+ 374                  
+ 375                  REN0=1;                 //UART0ÔÊÐí½ÓÊÕ£¨REN0=1£©
+ 376                  for(i_cont=0;i_cont<20000;i_cont++)
+ 377                  {
+ 378                          if(RI0==1)
+ 379                          {
+ 380                                  RI0=0;
+ 381                                  dat=SBUF0;
+ 382                                  REN0=0;
+ 383                                  return(dat);
+ 384                          }
+ 385                  }
+ 386                  return(0xff);
+ 387          }
+ 388          
+ 389          
+ 390          int Count(int shiwei,int gewei,int mode)                                                                                        //ÊýÖµ¼ÆËãº¯Êý
+ 391          {
+ 392                  int shuzhi=0;
+ 393                  while(1)
+ 394                  {
+ 395                          //if(shiwei==6 && gewei>=3 && mode==0)gewei=3;
+ 396                          //if(shiwei==3 && gewei>=8 && mode==1)gewei=8;
+ 397                          //if(shiwei==1 && gewei>=7 && mode==2)gewei=7;
+ 398                          P3=table[shiwei];
+ 399                          P2=table[gewei];
+ 400                          keystate=read_key();                                    //°´¼ü½ÓÊÕ
+ 401                          if(keystate==1)                                                                                                                         //ÊäÈëÕûÊýµÄÊ®Î»
+ 402                          {
+ 403                                  shiwei++;
+ 404                                  //if(shiwei>=6 && mode==0)shiwei=6;
+ 405                                  //if(shiwei>=3 && mode==1)shiwei=3;
+ 406                                  //if(shiwei>=1 && mode==2)shiwei=1;
+ 407                                  keystate=-1;
+ 408                          }
+ 409                          if(keystate==2)                                                                                                                         //ÊäÈëÕûÊýµÄ¸öÎ»
+ 410                          {
+ 411                                  gewei++;
+ 412                                  //if(gewei>=9)gewei=9;
+ 413                                  if(gewei>9)                                     //ÊµÏÖ½øÎ»
+ 414                                   {
+ 415                                          gewei=0;
+ 416                                          shiwei++;
+ 417                                   }
+ 418          
+ 419                                  keystate=-1;
+ 420                          }
+ 421                          if(keystate==3)                                                                                                                         //Ê®Î»¸öÎ»¶¼ÇåÁã
+C51 COMPILER V9.60.0.0   XZ                                                                04/04/2024 14:00:04 PAGE 8   
+
+ 422                          {
+ 423                                  shiwei=0;
+ 424                                  gewei=0;
+ 425                                  P3=table[shiwei];
+ 426                                  P2=table[gewei];
+ 427                                  keystate=-1;
+ 428                          }
+ 429                          if(keystate==4)                                                                                                                         //ÊýÖµÊäÈëÍê±Ï
+ 430                          {
+ 431                                  shuzhi=shiwei*10+gewei;
+ 432                                  shiwei=0;
+ 433                                  gewei=0;
+ 434                                  keystate=-1;
+ 435                                  P2=0xff;
+ 436                                  P3=0xff;
+ 437                                  return shuzhi;
+ 438                          }
+ 439                  }
+ 440          }
+ 441          
+ 442          
+ 443          void SendFF(int num)  //            ÓëÇ°ÃæµÄ·¢ËÍÖ¸Áî²»Í¬£»·¢ËÍ¹Ì¶¨Ö¸Áî¼õÉÙ´úÂë¸´ÔÓ¶È
+ 444          {
+ 445                  int number;
+ 446                  number=10*16+num;
+ 447                  P3=0x88;   //ÏÔÊ¾A
+ 448                  P2=table[num];  //ÏÔÊ¾Êý×Ö
+ 449                  send_1byte('I');
+ 450                  send_1byte('R');
+ 451                  send_1byte(number);       //·¢ËÍ²Ù×÷Âë
+ 452                  caozuoshu1=255;
+ 453                  caozuoshu2=255;                  //²Ù×÷ÊýÖ±½Ó·¢ËÍFFH£¨255£©
+ 454                  send_1byte(caozuoshu1);
+ 455                  send_1byte(caozuoshu2);
+ 456          }
+ 457          
+ 458          
+ 459          void Send(int num,int mode);
+ 460          
+ 461          void Receive(int num)  //ÒÑÐÞ¸Ä
+ 462          {
+ 463                  int number,record=0;
+ 464                  uchar buf2,key,a,b;
+ 465                  while(1)
+ 466                  {
+ 467                          buf1=receive_1byte();                                                                                                                   //½ÓÊÕ1¸ö×Ö½Ú£¬I
+ 468                          if(buf1=='I')
+ 469                          {
+ 470                                  buf1=receive_1byte();                                                                                                           //½ÓÊÕ1¸ö×Ö½Ú£¬R
+ 471                                  if(buf1=='R')
+ 472                                  {
+ 473                                          buf1=receive_1byte();                                                                                                   //½ÓÊÕ1¸ö×Ö½Ú£¬²Ù×÷Âë
+ 474                                          number=10*16+num;
+ 475                                          if(buf1==number)                                                                                                                //²éÑ¯µ±Ç°²Ù×÷ÃüÁî
+ 476                                          {
+ 477                                                  buf1=receive_1byte();                                                                                           //½ÓÊÕ1¸ö×Ö½Ú,ÕûÊý
+ 478                                                  buf2=receive_1byte();                                                                                           //½ÓÊÕ1¸ö×Ö½Ú,Ð¡Êý
+ 479                                                  P3=table[buf1/10]&0x7F;                                                                                         //Ä¬ÈÏÏÔÊ¾ÕûÊý
+ 480                                                  a=buf1%10;
+ 481                                                  P2=table[a]&0xFF;     
+ 482                                                  while(1)
+ 483                                                  {
+C51 COMPILER V9.60.0.0   XZ                                                                04/04/2024 14:00:04 PAGE 9   
+
+ 484                                                          key=read_key();
+ 485                                                          switch(key)
+ 486                                                          {
+ 487                                                                  case 1:                                                                                                         //°´¼ü1Ð¡Êý¡¢ÕûÊýÏÔÊ¾ÇÐ»»
+ 488                                                                          if(record==0)
+ 489                                                                          {
+ 490                                                                                  P3=table[buf2/10]&0xFF;
+ 491                                                                                  b=buf2%10;
+ 492                                                                                  P2=table[b]&0x7F;
+ 493                                                                                  record=1;
+ 494                                                                                  break;
+ 495                                                                          }
+ 496                                                                          else if(record==1)
+ 497                                                                          {
+ 498                                                                                  P3=table[buf1/10]&0x7F;
+ 499                                                                                  a=buf1%10;
+ 500                                                                                  P2=table[a]&0xFF;
+ 501                                                                                  record=0;
+ 502                                                                                  break;
+ 503                                                                          }
+ 504                                                                  case 2:                                                                                                         //°´¼ü2ÍË³ö£¬·µ»ØÖ÷Ò³Ãæ
+ 505                                                                          record=3;
+ 506                                                                          break;
+ 507                                                          }
+ 508                                                          if(record==3)
+ 509                                                          {
+ 510                                                                  break;
+ 511                                                          }
+ 512                                                  }
+ 513                                          }
+ 514                                  }
+ 515                          }
+ 516                          if(record==3)
+ 517                          {
+ 518                                  break;
+ 519                          }
+ 520                  }
+ 521          }
+ 522          
+ 523          
+ 524          void delay(void)
+ 525          { 
+ 526                  ulong i;
+ 527                  for(i=0;i<0x1000;++i);  //0x1000×ªÎªÊ®½øÖÆ4096  
+ 528          }
+ 529          
+ 530          
+ 531          void delay1(void)
+ 532          { 
+ 533                  ulong i;
+ 534                  for(i=0;i<0x10000;++i);
+ 535          }
+
+C51 COMPILATION COMPLETE.  2 WARNING(S),  2 ERROR(S)
